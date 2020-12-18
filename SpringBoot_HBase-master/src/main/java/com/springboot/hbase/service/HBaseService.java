@@ -10,10 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class HBaseService {
@@ -140,6 +137,29 @@ public class HBaseService {
             close(null, rs, table);
         }
         return result;
+    }
+
+    /*
+    * @author ygp
+     */
+    public HashSet<Result> queryResult(String tableName, Scan scan){
+        HashSet<Result> resultSet = new HashSet<>();
+        ResultScanner resultScanner = null;
+        Table table = null;
+
+        try {
+            table = getTable(tableName);
+            resultScanner = table.getScanner(scan);
+            for (Result result: resultScanner){
+                resultSet.add(result);
+            }
+        }catch (IOException e){
+            log.error(MessageFormat.format("使用过滤器查询表 tableName:{0}时产生错误", tableName), e);
+        }finally {
+            close(null, resultScanner, table);
+        }
+
+        return resultSet;
     }
 
     /**

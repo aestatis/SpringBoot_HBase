@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.2.2.RELEASE</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relmaativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>com.springboot</groupId>
     <artifactId>hbase</artifactId>
@@ -40,6 +40,12 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
             <version>2.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.hsr</groupId>
+            <artifactId>geohash</artifactId>
+            <version>1.4.0</version>
         </dependency>
 
     </dependencies>
