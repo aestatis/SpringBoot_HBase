@@ -3,6 +3,7 @@ package com.springboot.hbase.utli;
 import ch.hsr.geohash.GeoHash;
 import ch.hsr.geohash.util.BoundingBoxGeoHashIterator;
 import ch.hsr.geohash.util.TwoGeoHashBoundingBox;
+import javafx.util.Pair;
 
 import java.util.HashSet;
 
@@ -47,5 +48,28 @@ public class GeoUtility {
         }
 
         return geoHashSet;
+    }
+
+    /*
+    * @author ygp
+    *
+    * @param str GeoHash的Base32字符串。
+    * @Description 传入一个GeoHash Base32字符串，返回一个Pair对象，key表示纬度Latitude，
+    * value 表示经度 Longitude。但是该方法是有误差的，原因在于很多具体的点生成的GeoHash字符串是一样的
+    * 所以通过该方法只能生成一个该GeoHash区域内的某一个点的经纬度。
+     */
+    public static Pair<Double, Double> getLatAndLngFromGeoHashStr(String str){
+        GeoHash geoHash = GeoHash.fromGeohashString(str);
+        double latitude = geoHash.getOriginatingPoint().getLatitude();
+        double longitude = geoHash.getOriginatingPoint().getLongitude();
+
+        String lat = String.format("%.6f", latitude);
+        String lng = String.format("%.6f", longitude);
+
+        latitude = Double.parseDouble(lat);
+        longitude = Double.parseDouble(lng);
+
+        Pair<Double, Double> coord = new Pair<Double, Double>(latitude, longitude);
+        return coord;
     }
 }

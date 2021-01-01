@@ -6,6 +6,7 @@ import org.apache.hadoop.hbase.client.Table;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /*
@@ -271,6 +272,10 @@ public class DateBaseInit {
                 //地铁
                 "0000100100000001",
         };
+        if (index < 0){
+            index = -index;
+        }
+
         index = index % MediaConditions.length;
         return MediaConditions[index];
     }
@@ -394,6 +399,10 @@ public class DateBaseInit {
                 "0001010100000011", "0001010100000100", "0001010100000101",
                 "0001010100000110"
         };
+        if (index < 0){
+            index = -index;
+        }
+
         index = index % ProCondition.length;
         return ProCondition[index];
     }

@@ -4,10 +4,12 @@ import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.CellScanner;
 import org.apache.hadoop.hbase.CellUtil;
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 
 /*
 * @author ygp
@@ -113,15 +115,17 @@ public class Advertisement {
                         /*
                          * path 是存放图片的文件夹的路径。
                          * path待实现一个具体的值
+                         * 下面是ygp的之前的，具体需要后端和前端约定一个存放从数据库中取出图片的地方，拿到url.
                          */
-                        String path = "" + advId;
+                        //String path = "D:\\tempImg/loadImg/img" + advId + ".jpg";
 
                         File file = new File(path);
 
                         // 文件不存在，就读取并创建文件。
                         if (!file.exists()){
                             // 从HBase中取出的是一个字节数组，需要把它转化成为一个文件，保存起来，然后得到url。
-                            byte[] bs = CellUtil.cloneValue(cell);
+                            String str = new String(CellUtil.cloneValue(cell));
+                            byte[] bs = str.getBytes(Charset.forName("ISO-8859-1"));;
                             FileOutputStream fos = new FileOutputStream(file);
                             fos.write(bs);
                             fos.close();
