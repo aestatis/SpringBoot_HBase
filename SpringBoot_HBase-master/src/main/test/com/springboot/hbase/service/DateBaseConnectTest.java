@@ -23,13 +23,13 @@ import java.util.Random;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
-public class DateBaseConnectTest {
+public class DataBaseConnectTest {
     @Resource
     private HBaseService hBaseService;
 
     @Test
     public void testGetResultScanner(){
-        Map<String, Map<String, String>> res = hBaseService.getResultScanner("test");
+        Map<String, Map<String, String>> res = hBaseService.getResultScanner("testTable");
         System.out.println("查询结果！");
         res.forEach((k, value) -> {
             System.out.println(k + "-->" + value);
@@ -65,66 +65,72 @@ public class DateBaseConnectTest {
     }
 
     /*
-    * @author ygp
-    * @Description 向Advertisement表中插入数据的案例
-    *
-    * @ coord 是一个上海市地点的经纬度，调用getAGeoCoord() 随机获取
-    * @ advId 是每一个广告的id，需要保证是独一无二的！！！
-    * @ rowKey 是行键 rowkey = geoHash.toBase32() + "_" + advId;
-    *
-    * @ conditionKeyValue 的值就像示例一样。
-    *
-    * @ name，theme，master，price，date, location 需要随机生成
-    * @ img可以从本地收集的广告集合中随机选择一张，需要是 jpg后缀。注意那个try 语句块，
-    * ！！！ byte[] 转 String, string再转 byte[], 会有两次 byte[] 数据不一致的情况发生，
-    * 要按try语句块里面那样做，img = new String(imgData, Charset.forName("ISO-8859-1"));
-    *
+     * @author ygp
+     * @Description 向Advertisement表中插入数据的案例
+     *
+     * @ coord 是一个上海市地点的经纬度，调用getAGeoCoord() 随机获取
+     * @ advId 是每一个广告的id，需要保证是独一无二的！！！
+     * @ rowKey 是行键 rowkey = geoHash.toBase32() + "_" + advId;
+     *
+     * @ conditionKeyValue 的值就像示例一样。
+     *
+     * @ name，theme，master，price，date, location 需要随机生成
+     * @ img可以从本地收集的广告集合中随机选择一张，需要是 jpg后缀。注意那个try 语句块，
+     * ！！！ byte[] 转 String, string再转 byte[], 会有两次 byte[] 数据不一致的情况发生，
+     * 要按try语句块里面那样做，img = new String(imgData, Charset.forName("ISO-8859-1"));
+     *
      */
     @Test
-    public void testInsertIntoAdvertisement(){
-        Pair coord = DateBaseInit.getAGeoCorrd();
-        GeoHash geoHash = GeoHash.withBitPrecision((Double) coord.getKey(),(Double) coord.getValue(),60);
-        String advId = "0001";
-        String rowkey = geoHash.toBase32() + "_" + advId;
+    public void testInsertIntoAdvertisement() {
+        int i;
+        for (i = 12160; i <= 20000; i++)
+        {
+            Pair coord = DateBaseInit.getAGeoCorrd();
+            GeoHash geoHash = GeoHash.withBitPrecision((Double) coord.getKey(), (Double) coord.getValue(), 60);
+            String advId = String.format("%05d", i);
+            String rowkey = geoHash.toBase32() + "_" + advId;
 
-        Random random = new Random();
-        String mediaCon = DateBaseInit.getMediaTypeByRandom(random.nextInt());
-        String proCon = DateBaseInit.getProTypeByRandom(random.nextInt());
-        String conditionKeyValue = mediaCon + proCon;
 
-        String name = "测试的name";
-        String theme = "测试的theme";
-        String master = "测试的master";
-        String price = "10000元/天";
-        String date = "2020-12-01";
-        String img = "";
-        String location = "某某街道-几百号";
-        try {
-            byte[] imgData;
-            imgData = DateBaseInit.generateImgData("D:\\tempImg/generateImg/OIP.jpg");
-            img = new String(imgData, Charset.forName("ISO-8859-1"));
-        }catch (IOException e){
-            System.out.println("加载图片失败，错误: " + e);
+            Random random = new Random();
+            String mediaCon = DateBaseInit.getMediaTypeByRandom(random.nextInt());
+            String proCon = DateBaseInit.getProTypeByRandom(random.nextInt());
+            String conditionKeyValue = mediaCon + proCon;
+
+            String name = DateBaseInit.getAdNameByRandom(random.nextInt());
+            String theme = DateBaseInit.getAdThemeByRandom(random.nextInt());
+            String master = DateBaseInit.getAdMasterByRandom(random.nextInt());
+            String price = DateBaseInit.getAdPriceByRandom(random.nextInt());
+            String date = DateBaseInit.getAdDateByRandom(random.nextInt());
+            String img = DateBaseInit.getAdImgByRandom(random.nextInt());
+            String location = DateBaseInit.getAdLocationByRandom(random.nextInt());
+
+            try {
+                byte[] imgData;
+                imgData = DateBaseInit.generateImgData(img);
+                img = new String(imgData, Charset.forName("ISO-8859-1"));
+            } catch (IOException e) {
+                System.out.println("加载图片失败，错误: " + e);
+            }
+
+            String[] columns = {"value"};
+            String[] values = {conditionKeyValue};
+            hBaseService.putData("Advertisement", rowkey, "ConditionKey", columns, values);
+
+            String[] columns2 = {"name", "theme", "master", "price", "date", "img", "location"};
+            String[] values2 = {name, theme, master, price, date, img, location};
+
+            hBaseService.putData("Advertisement", rowkey, "AdverInfo", columns2, values2);
         }
-
-        String[] columns = {"value"};
-        String[] values = {conditionKeyValue};
-        hBaseService.putData("Advertisement", rowkey, "ConditionKey", columns, values);
-
-        String[] columns2 = {"name", "theme", "master", "price", "date", "img", "location"};
-        String[] values2 = {name, theme, master, price, date, img, location};
-
-        hBaseService.putData("Advertisement", rowkey, "AdverInfo", columns2, values2);
     }
 
 
     /*
-    * @author ygp
-    * @Description 测试从Hbase中取出一条广告数据。实际开发中调用 DateBaseQuery.queryByLatAndLng()方法就可以了
+     * @author ygp
+     * @Description 测试从Hbase中取出一条广告数据。实际开发中调用 DateBaseQuery.queryByLatAndLng()方法就可以了
      */
     @Test
     public void testQuery(){
-        String geohashStr = "wtt8jc2webvu";
+        String geohashStr = "wtt81ptvsw67";
         Scan scan = new Scan();
         Filter filter = new PrefixFilter(geohashStr.getBytes());
         scan.setFilter(filter);
